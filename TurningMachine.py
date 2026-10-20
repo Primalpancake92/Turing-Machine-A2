@@ -14,7 +14,7 @@
         a[i] > b[i] -> swap a[i] and b[i]
         
         if a[i] =< b[i] -> stop and go to a[i+1] 
-        if a[i] > b[i] -> first difference found, return to pos 1 and swap a and b
+        if a[i] > b[i] -> first difference found, swap a[i] and b[i] and swap the rest
         
     Flags:
         C = clean
@@ -27,8 +27,9 @@
 
 import unicodedata
 
-hex = '123456789ABCDEF'
+hexadecimal = '0123456789ABCDEF'
 width = 16
+gap = width + 1    # a[i] to b[i] is 16 bits + 1 comma
 
 blank = '·'
 initial_state = '⎆'
@@ -38,7 +39,17 @@ move_right = '→'
 move_left = '←'
 halt = '⏹'
 
-rule = []
+rules = []
 
 def rule(curr_state, curr_symbol, move, nxt_symbol, nxt_state):
+    rules.append((curr_state, curr_symbol, move, nxt_symbol, nxt_state))
+    
+def travel():
+    pass
+
+def compare():
+    pass
+
+def swap():
+    pass
 
