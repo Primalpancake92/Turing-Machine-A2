@@ -5,8 +5,8 @@
     Swap (no markers):
         read a[i] -> remember in STATE -> travel fixed-width to b[i] -> write a[i] to b[i] -> travel fixed-width back to a[i] 
         STATE:
-            goR_L#_move'n' where # is the number at a[i] and n is the number of digits to b[i] x k
-            goL_R#_move'n' where # is the number at b[i] and n is the number of digits to a[i] x k
+            goR_L#_move'n' where # is the number at a[i] and n is the moves still needed to reach b[i]
+            goL_R#_move'n' where # is the number at b[i] and n is the moves still needed to reach a[i]
             
     Compare:
         a[i] = b[i] -> skip to a[i+1]
@@ -16,9 +16,6 @@
         if a[i] =< b[i] -> stop and go to a[i+1] 
         if a[i] > b[i] -> first difference found, swap a[i] and b[i] and swap the rest
         
-    Flags:
-        C = clean
-        D = dirty (has been swapped)
         
     Halting:
         if all pairs are clean and ] is reached, go to cell 0 and accept
@@ -30,7 +27,7 @@
     - a and b are the hex digits being compared
     - C = clean
     - D = dirty
-    - n = the number of digits to travel to the other cell
+    - n = the number of moves still needed to travel to the other cell
     
         ⎆ = initial state
         
@@ -69,7 +66,7 @@
         Difference found:
             compare_clean() [a>b]
                 cmp_L{a}_pos{i}_clean = writes a[i] to b[i] and carries b[i] to a[i]
-                (fist exchange complete in compare_clean)
+                (first exchange complete in compare_clean)
             
             swap()
                 goL_R{b}_pos{i}_{n}m = carries b[i] to a[i]
@@ -96,7 +93,7 @@
             compare_dirty() uses same swap states and goes back to compare_dirty() for next pair at next_pair_dirty
         
         ] reached while dirty:
-            go to cell 0 and repeat the process at read_pos{0}_dirty
+            go to cell 0 and repeat the process at read_pos{0}_clean
 """
 
 import csv
@@ -117,17 +114,32 @@ rules = []
 
 def rule(curr_state, curr_symbol, move, nxt_symbol, nxt_state):
     rules.append((curr_state, curr_symbol, move, nxt_symbol, nxt_state))
+        
+def skip(curr_state, symbols, move, nxt_state):
+    """
+    moves over symbols without changing symbol --> used for travel() and for states next_pair, to_b_start, and rewind
+    adds one rule per symbol 
+    moves, writes the same symbol back (unchanged) and goes to the next state    
+    """
+    for symbol in symbols:
+        rule(curr_state, symbol, move, symbol, nxt_state)
     
-def skip():
-    # move right over symbols without changing state or symbol --> used for travel() and for states next_pair, to_b_start, rewind
-    pass
-    
-def travel():
-    # move right or left over symbols without changing state or symbol --> used for swap and compare
-    pass
+def travel(state, move, steps, nxt_state, end_state=None):
+    """
+    move right or left over symbols without changing symbol --> used for swap and compare
+    builds a chain of states that counts moves in the state names
+         state_{n}m -> state_{n-1}m -> ... -> state_{1}m -> next_state
+    special case: if a list only has one number, it reads ']' where it expected to find any other number or comma as there's no other entry to compare to
+    --> in that case, leave the chain and go to end_state
+    """
+    for n in range(steps, 0, -1):
+        now = f"{state}_{n}m"                                   # current state
+        after = nxt_state if n == 1 else f"{state}_{n-1}m"      # next countdown state, unless n == 1 where it is nxt_state
+        skip(now, hexadecimal + ',', move, after)               # add 17 rows for each state (hex + comma) -- leaves symbol unchanged, moves one cell, and goes to after (only state name changes)
+        if end_state:                                           # for special case, reaches ']' at cell 17
+            rule(now, ']', move_left, ']', end_state)
 
 def compare_clean():
-    
     pass
 
 def compare_dirty():
@@ -135,6 +147,9 @@ def compare_dirty():
 
 def swap():
     pass
+
+# Initial state rule - starts at '[' then begins reading in the clean state 
+rule (initial_state, '[', move_right, '[', 'read_pos0_clean')
 
 #export tsv
 with open('TurningMachine.csv', 'w', newline='', encoding='utf-8') as csvfile:
