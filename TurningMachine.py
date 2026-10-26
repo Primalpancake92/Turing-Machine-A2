@@ -65,7 +65,7 @@
     
         Difference found:
             compare_clean() [a>b]
-                cmp_L{a}_pos{i}_clean = writes a[i] to b[i] and carries b[i] to a[i]
+                cmp_L{a}_pos{i}_clean_{n}m = writes a[i] to b[i] and carries b[i] to a[i]
                 (first exchange complete in compare_clean)
             
             swap()
@@ -140,8 +140,52 @@ def travel(state, move, steps, nxt_state, end_state=None):
             rule(now, ']', move_left, ']', end_state)
 
 def compare_clean():
-    pass
-
+    """
+    starts on a[0] in state read_pos0_clean
+    read a[i] -> remember in STATE -> carry to b[i] -> compare -> travel back to a[i + 1] (if equal)
+    
+    """
+    for i in range(width):
+        read = f"read_pos{i}_clean"                     # state at a[i] reading a
+        
+        for a in hexadecimal:                           # set of states for all possible digits in a[i]
+            carry = f"goR_L{a}_pos{i}_clean"            # state carrying a to b[i]
+            cmp = f"cmp_L{a}_pos{i}_clean"              # state at b[i] comparing b to a
+            
+            # move 1 of 17, so the chain adds the 16 left
+            rule(read, a, move_right, a, f'{carry}_{gap - 1}m' )                # read a, write it back, and move right
+            # for special case of only one number
+            travel(carry, move_right, gap - 1, cmp, end_state='rewind_clean')   # carry a to b[i] and compare to b[i], if ']' is reached (special case of only one number), go to rewind_clean
+            
+            for b in hexadecimal:                       # set of states at b[i], reading b, and comparing it to a
+                if b < a:                               # first difference 
+                    rule(cmp, b, move_left, a, f'goL_R{b}_pos{i}_{gap - 1}m')    # if b < a, move left and carry b to a[i], then go into swap()
+                elif b > a:                             # already in right order
+                    rule(cmp, b, move_left, b, 'next_pair_clean')                # if b > a, move left and go to next pair
+            if i < width - 1:                           # move 1 of 16, so the chain adds the 15 left
+                rule(cmp, a, move_left, a, f'back_pos{i}_clean_{gap - 2}m')      # if a == b and not at last digit, go back to a[i + 1]
+            else:                                       # all 16 digits are equal
+                rule(cmp, a, move_right, a, 'next_pair_clean')                   # if a == b and at last digit, go to next pair
+        
+        if i < width - 1:                               # moving from b[i] to a[i + 1]
+            travel(f'back_pos{i}_clean', move_left, gap - 2, f'read_pos{i + 1}_clean')  # go back to a[i + 1] and read it
+            
+    # next pair - in number b
+    skip('next_pair_clean', hexadecimal, move_right, 'next_pair_clean')         # scan over digits to the either the separator ',' or end ']'     
+    rule('next_pair_clean', ',', move_left, ',', 'to_b_start_clean')            # another number
+    rule('next_pair_clean', ']', move_left, ']', 'rewind_clean')                # end of pass
+    # if not at the end of list
+    skip('to_b_start_clean', hexadecimal, move_left, 'to_b_start_clean')        # scan backwards through b 
+    rule('to_b_start_clean', ',', move_right, ',', 'read_pos0_clean')           # when separator ',' is reached, go to b[0] and start comparison with b as a
+    
+    # rewind (accept)
+    skip('rewind_clean', hexadecimal + ',' +']', move_left, 'rewind_clean')         # scan left to [ in cell 0
+    rule('rewind_clean', '[', halt, '[', accept_state)                          # when in cell 0, halt and accept
+    
+    # special case: empty list
+    rule('read_pos0_clean', ']', move_left, ']', 'rewind_clean')
+    
+    
 def compare_dirty():
     pass
 
