@@ -266,6 +266,12 @@ def swap():
 # Initial state rule - starts at '[' then begins reading in the clean state 
 rule (initial_state, '[', move_right, '[', 'read_pos0_clean')
 
+# the rest of the rules
+compare_clean()
+compare_dirty()
+swap()
+
+
 #export tsv
 with open('TurningMachine.csv', 'w', newline='', encoding='utf-8') as csvfile:
     writer = csv.writer(csvfile, delimiter="\t", lineterminator="\n")
