@@ -250,7 +250,7 @@ def swap():
         
         for b in hexadecimal:                               
             carry = f"goL_R{b}_pos{i}"                  # state carrying b to a[i] 
-            writeR = f"write_R{a}_pos{i}"               # state at a[i] with b in memory
+            writeR = f"write_R{b}_pos{i}"               # state at a[i] with b in memory
             
             # compare goes into this chain when the first different is found
             travel(carry, move_left, gap - 1, writeR)                           # carry b to a[i]
@@ -271,6 +271,8 @@ compare_clean()
 compare_dirty()
 swap()
 
+# error check: no two rows can share a state name
+#assert len({(r[0], r[1]) for r in rules}) == len(rules), 'duplicate rule'
 
 #export tsv
 with open('TurningMachine.csv', 'w', newline='', encoding='utf-8') as csvfile:
