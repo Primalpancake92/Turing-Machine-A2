@@ -230,7 +230,38 @@ def compare_dirty():
     rule('read_pos0_dirty', ']', move_left, ']', 'rewind_dirty')
 
 def swap():
-    pass
+    """
+    exchange digits in position, one position at a time
+    """
+    for i in range(width):
+        read = f"swap_read_pos{i}"                      # state at a[i] reading a
+        
+        for a in hexadecimal:                           
+            carry = f"goR_L{a}_pos{i}"                  # state carrying a to b[i]
+            writeL = f"write_L{a}_pos{i}"               # state at b[i] with a in memory 
+            
+            # move 1 of 17, so the chain adds the 16 left
+            rule(read, a, move_right, a, f'{carry}_{gap - 1}m' )                # read a, write it back, and move right
+            travel(carry, move_right, gap - 1, writeL)                          # carry a to b[i] 
+            
+            for b in hexadecimal:                       
+                # move 1 of 17, so the chain adds the 16 left
+                rule(writeL, b, move_left, a, f'goL_R{b}_pos{i}_{gap - 1}m')    # at b[i], write over it, remember it in next state name, and move back 17 cells
+        
+        for b in hexadecimal:                               
+            carry = f"goL_R{b}_pos{i}"                  # state carrying b to a[i] 
+            writeR = f"write_R{a}_pos{i}"               # state at a[i] with b in memory
+            
+            # compare goes into this chain when the first different is found
+            travel(carry, move_left, gap - 1, writeR)                           # carry b to a[i]
+            
+            next_read = f'swap_read_pos{i + 1}' if i < width - 1 else 'next_pair_swap'  # next state which is read pos i+1, until after position 15 which moves to the next swap
+            
+            for d in hexadecimal:
+                rule(writeR, d, move_right, b, next_read)                       # for each digit write b and move right
+            
+    # after position 15 it is ',', move to b[0] and move to compare_dirty() (swaps make pass dirty)
+    rule('next_pair_swap', ',', move_right, ',', 'next_pair_dirty')
 
 # Initial state rule - starts at '[' then begins reading in the clean state 
 rule (initial_state, '[', move_right, '[', 'read_pos0_clean')
