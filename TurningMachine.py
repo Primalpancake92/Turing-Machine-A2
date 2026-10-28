@@ -161,7 +161,7 @@ def compare_clean():
                 if b < a:                               # first difference 
                     rule(cmp, b, move_left, a, f'goL_R{b}_pos{i}_{gap - 1}m')    # if b < a, move left and carry b to a[i], then go into swap()
                 elif b > a:                             # already in right order
-                    rule(cmp, b, move_left, b, 'next_pair_clean')                # if b > a, move left and go to next pair
+                    rule(cmp, b, move_right, b, 'next_pair_clean')               # if b > a, continue right to the next pair
             if i < width - 1:                           # move 1 of 16, so the chain adds the 15 left
                 rule(cmp, a, move_left, a, f'back_pos{i}_clean_{gap - 2}m')      # if a == b and not at last digit, go back to a[i + 1]
             else:                                       # all 16 digits are equal
@@ -205,7 +205,7 @@ def compare_dirty():
                 if b < a:                               # first difference 
                     rule(cmp, b, move_left, a, f'goL_R{b}_pos{i}_{gap - 1}m')    # if b < a, move left and carry b to a[i], then go into swap()
                 elif b > a:                             # already in right order
-                    rule(cmp, b, move_left, b, 'next_pair_dirty')                # if b > a, move left and go to next pair
+                    rule(cmp, b, move_right, b, 'next_pair_dirty')               # if b > a, continue right to the next pair
             if i < width - 1:                           # move 1 of 16, so the chain adds the 15 left
                 rule(cmp, a, move_left, a, f'back_pos{i}_dirty_{gap - 2}m')      # if a == b and not at last digit, go back to a[i + 1]
             else:                                       # all 16 digits are equal
