@@ -113,6 +113,15 @@ halt = '⏹'
 rules = []
 
 def rule(curr_state, curr_symbol, move, nxt_symbol, nxt_state):
+    """Adds a transition rule to the rules array as a tuple.
+
+    Args:
+        curr_state (_type_): move_right, move_left, blank, initial_state, etc.
+        curr_symbol (_type_): the symbol that the head is reading right now.
+        move (_type_): where the head goes after writing.
+        nxt_symbol (_type_): what to write in the current cell.
+        nxt_state (_type_): the state to switch to.
+    """
     rules.append((curr_state, curr_symbol, move, nxt_symbol, nxt_state))
         
 def skip(curr_state, symbols, move, nxt_state):
@@ -128,7 +137,7 @@ def travel(state, move, steps, nxt_state, end_state=None):
     """
     move right or left over symbols without changing symbol --> used for swap and compare
     builds a chain of states that counts moves in the state names
-         state_{n}m -> state_{n-1}m -> ... -> state_{1}m -> next_state
+    state_{n}m -> state_{n-1}m -> ... -> state_{1}m -> next_state
     special case: if a list only has one number, it reads ']' where it expected to find any other number or comma as there's no other entry to compare to
     --> in that case, leave the chain and go to end_state
     """
@@ -144,6 +153,7 @@ def compare_clean():
     starts on a[0] in state read_pos0_clean
     read a[i] -> remember in STATE -> carry to b[i] -> compare -> travel back to a[i + 1] (if equal)
     
+                rule(cmp, a, move_left, a, f'back_pos{i}_clean_{gap - 2}m')      # if a == b and not at last digit
     """
     for i in range(width):
         read = f"read_pos{i}_clean"                     # state at a[i] reading a

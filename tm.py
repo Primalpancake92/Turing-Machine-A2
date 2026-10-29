@@ -17,8 +17,8 @@ import sys
 import unicodedata
 
 BLANK = "·"
-INITIAL, ACCEPT, ERROR = "⎆", "✔", "❗"
-RIGHT, LEFT, HALT = "→", "←", "⏹"
+INITIAL, ACCEPT, ERROR = "⎆", "✔", "❗" # these are the halting states
+RIGHT, LEFT, HALT = "→", "←", "⏹" 
 DEFAULT_MAX_STEPS = 1_000_000
 
 
