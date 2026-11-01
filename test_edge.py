@@ -1,7 +1,7 @@
 import unittest
 from helper import TmSetup, ENTRY, random_input, random_arr
 import random
-
+import time
 
 class TestEdgeCases(TmSetup):
     # Tests the empty tapes.
@@ -18,8 +18,14 @@ class TestEdgeCases(TmSetup):
         
     # Testing a tape of equal entries
     def test_equal(self):
+        start = time.perf_counter()
+         
         self.check_equality([ENTRY("A") for _ in range(5)])
         
+        stop = time.perf_counter()
+
+        print(f"\nExecution time: {stop - start:.3f} seconds.\t")
+    
     
     # Tests for a single entry on the tape
     def test_single(self):
